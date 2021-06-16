@@ -144,7 +144,7 @@ public class SeriesDatabase {
 			closeConnection();
 		} catch (SQLException e) {
 			displaySQLError(e);
-			
+
 			return -1;
 		}
 		return csv.size();
@@ -161,78 +161,75 @@ public class SeriesDatabase {
 			ResultSet rs = st2.executeQuery(sql);
 			int index = 0;
 			int id_serieUlt = 0;
-			if(rs.next()){ 
+			if (rs.next()) {
 				lista.add(new String(rs.getString("titulo") + ": ["));
 				lista.set(index, lista.get(index) + rs.getInt("n_capitulos") + ",");
 				id_serieUlt = rs.getInt("id_serie");
+			} else {
+				return "{}";
 			}
-			else { return "{}";}
 			while (rs.next()) {
 				String titulo = rs.getString("titulo");
 				int id_serie = rs.getInt("id_serie");
 				int n_capitulos = rs.getInt("n_capitulos");
-				System.out.println("idAcual: "+ id_serie + "   " + id_serieUlt + "   " + index);
-				if (id_serie!=id_serieUlt && id_serieUlt!=0) { 
+				System.out.println("idAcual: " + id_serie + "   " + id_serieUlt + "   " + index);
+				if (id_serie != id_serieUlt && id_serieUlt != 0) {
 					lista.add(new String(rs.getString("titulo") + ": ["));
 					String resPosIndex = lista.get(index);
-					lista.set(index, resPosIndex.substring(0, resPosIndex.length()-1) + "] ,");
+					lista.set(index, resPosIndex.substring(0, resPosIndex.length() - 1) + "] ,");
 					index++;
 					lista.set(index, lista.get(index) + n_capitulos + ",");
 					id_serieUlt = id_serie;
-				} 
-				else{
+				} else {
 					lista.set(index, lista.get(index) + n_capitulos + ",");
 				}
 			}
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			displaySQLError(e);
 			return null;
-		}
-		finally
-		{
+		} finally {
 			for (String res : lista) {
-				result+= res;
+				result += res;
 			}
 		}
-		return result.substring(0, result.length()-1) + "]}";
+		return result.substring(0, result.length() - 1) + "]}";
 	}
 
-	private void displaySQLError(SQLException e){
+	private void displaySQLError(SQLException e) {
 		System.out.println("Error message: " + e.getMessage());
 		System.out.println("Error code: " + e.getErrorCode());
 		System.out.println("SQL state: " + e.getSQLState());
 		e.printStackTrace();
 	}
- 
+
 	public String noHanComentado() {
 		String result = "[";
 		try {
 			openConnection();
 			st2 = con.createStatement();
-			ResultSet rs = st2.executeQuery("SELECT nombre, apellido1, apellido2 FROM usuario " +
-                                "LEFT JOIN comenta ON usuario.id_usuario = comenta.id_usuario" +
-                                 " WHERE comenta.id_usuario IS NULL ORDER BY apellido1 ASC;");
-			while(rs.next()){
-				if(rs.isFirst()){
-				result += rs.getString("nombre") + " " + rs.getString("apellido1") + " " + rs.getString("apellido2");
-				}
-				else{
-				result += ", " + rs.getString("nombre") + " " + rs.getString("apellido1") + " " + rs.getString("apellido2");
+			ResultSet rs = st2.executeQuery("SELECT nombre, apellido1, apellido2 FROM usuario "
+					+ "LEFT JOIN comenta ON usuario.id_usuario = comenta.id_usuario"
+					+ " WHERE comenta.id_usuario IS NULL ORDER BY apellido1 ASC;");
+			while (rs.next()) {
+				if (rs.isFirst()) {
+					result += rs.getString("nombre") + " " + rs.getString("apellido1") + " "
+							+ rs.getString("apellido2");
+				} else {
+					result += ", " + rs.getString("nombre") + " " + rs.getString("apellido1") + " "
+							+ rs.getString("apellido2");
 				}
 			}
-		}
-		catch(SQLException e){
+		} catch (SQLException e) {
 			displaySQLError(e);
 			return null;
 		}
 		return result + "]";
 	}
 
-	public double mediaGenero (String genero) {
+	public double mediaGenero(String genero) {
 		openConnection();
-		String sql = "SELECT avg(valora.valor) average FROM pertenece join genero on genero.id_genero = pertenece.id_genero" + 
-		" join valora on pertenece.id_serie = valora.id_serie WHERE genero.descripcion = \"" + genero + "\";";
+		String sql = "SELECT avg(valora.valor) average FROM pertenece join genero on genero.id_genero = pertenece.id_genero"
+				+ " join valora on pertenece.id_serie = valora.id_serie WHERE genero.descripcion = \"" + genero + "\";";
 		double result = -3;
 		boolean hayGen = false;
 		try {
@@ -242,10 +239,11 @@ public class SeriesDatabase {
 			if (hayGen) {
 				st2 = con.createStatement();
 				ResultSet rs2 = st2.executeQuery(sql);
-				if (!rs2.next()) result = 0.0;
-				else result = rs2.getDouble("average");
-			} 
-			else {
+				if (!rs2.next())
+					result = 0.0;
+				else
+					result = rs2.getDouble("average");
+			} else {
 				result = -1.0;
 			}
 		} catch (SQLException e) {
@@ -260,16 +258,23 @@ public class SeriesDatabase {
 	}
 
 	public boolean setFoto(String filename) {
-		openConnection();
 		PreparedStatement pst = null;
 		ResultSet rs = null;
 		File f = null;
 		FileInputStream fis = null;
 
 		try {
-			pst = con.prepareStatement("UPDATE usuatio SET foto = ? WHERE id_usuario = ?;");
-			f = new File("HomerSimpson.jpg");
+			openConnection();
+			pst = con.prepareStatement(
+					"UPDATE usuario SET fotografia = ? WHERE apellido1 = 'Cabeza' AND fotografia IS NULL;");
+			f = new File(filename);
 			fis = new FileInputStream(f);
+			pst.setBinaryStream(1, fis, (int) f.length());
+			int n = pst.executeUpdate();
+			if (n > 0)
+				System.out.println("Fotografia añadida");
+			else
+				System.out.println("Fotografia no añadida");
 		} catch (SQLException | FileNotFoundException e) {
 			e.printStackTrace();
 			return false;
