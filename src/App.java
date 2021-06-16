@@ -11,6 +11,9 @@ public class App {
         // System.out.println(bbdd.mediaGenero("Terror"));  
         // bbdd.mediaGenero("Drama");
         // System.out.println(bbdd.noHanComentado());        
-        System.out.println(bbdd.setFoto("HomerSimpson.jpg"));        
+        // System.out.println(bbdd.setFoto("HomerSimpson.jpg"));
+        System.out.println(bbdd.duracionMedia("1234123412"));
+       
+                
     }
 }

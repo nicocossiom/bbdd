@@ -35,4 +35,20 @@ Select serie.titulo, temporada.n_capitulos, temporada.n_temporada, serie.id_seri
  WHERE genero.descripcion = "Terror"
  ;
 
- select * from genero where descripcion = "Drama"
+ select * from genero where descripcion = "Drama";
+
+ update usuario
+ set fotografia = se;ect 
+ select * from usuario("HomerSimpson.jpg") where usuario.apellido1 = "Cabeza";
+
+
+ SELECT AVG(capitulo.duracion) average FROM capitulo JOIN serie ON serie.id_serie = capitulo.id_serie
+ JOIN capitulo cap ON serie.id_serie = capitulo.id_serie 
+ left JOIN valora t on t.id_serie IS NULL AND t.n_temporada IS NULL AND t.n_orden IS NULL
+ WHERE serie.idioma = 'Francés' ;
+
+
+SELECT * FROM serie JOIN serie ON serie.idioma = capitulo.id_serie where serie.idioma = "POllas";
+
+SELECT * FROM capitulo JOIN serie ON serie.id_serie = capitulo.id_serie where serie.idioma = "Francés";
+

@@ -195,12 +195,6 @@ public class SeriesDatabase {
 		return result.substring(0, result.length() - 1) + "]}";
 	}
 
-	private void displaySQLError(SQLException e) {
-		System.out.println("Error message: " + e.getMessage());
-		System.out.println("Error code: " + e.getErrorCode());
-		System.out.println("SQL state: " + e.getSQLState());
-		e.printStackTrace();
-	}
 
 	public String noHanComentado() {
 		String result = "[";
@@ -235,7 +229,6 @@ public class SeriesDatabase {
 		try {
 			Statement st1 = con.createStatement();
 			hayGen = st1.execute("select * from genero where descripcion = \"" + genero + "\"");
-			System.out.println(hayGen);
 			if (hayGen) {
 				st2 = con.createStatement();
 				ResultSet rs2 = st2.executeQuery(sql);
@@ -254,7 +247,25 @@ public class SeriesDatabase {
 	}
 
 	public double duracionMedia(String idioma) {
-		return 0.0;
+		openConnection();
+		String sql =  "SELECT AVG(capitulo.duracion) average FROM capitulo JOIN serie ON serie.id_serie = capitulo.id_serie "+
+		"JOIN capitulo cap ON serie.id_serie = capitulo.id_serie " + 
+		"left JOIN valora t on t.id_serie IS NULL AND t.n_temporada IS NULL AND t.n_orden IS NULL WHERE serie.idioma = \"" + idioma + "\";";
+		double result = -3.0;
+		ResultSet hayCap = null;
+		try{
+			Statement st1 = con.createStatement();
+			hayCap = st1.executeQuery(sql);
+			hayCap.next();
+			result = hayCap.getDouble("average");
+			//al ser el query con select avg siempre devuelve un valor aunque sea null, cuando se obtiene la columna y es 0 el valor entonces
+			//sabemos que no hay capitulos que cumplen los requisitos y retornamos -1
+			if(result==0) result=-1;		
+		} catch (SQLException e) {
+			displaySQLError(e);
+			result = -2.0;
+		}
+		return result;
 	}
 
 	public boolean setFoto(String filename) {
@@ -262,7 +273,6 @@ public class SeriesDatabase {
 		ResultSet rs = null;
 		File f = null;
 		FileInputStream fis = null;
-
 		try {
 			openConnection();
 			pst = con.prepareStatement(
@@ -352,5 +362,12 @@ public class SeriesDatabase {
 			this.valor = valor;
 		}
 	}
+	private void displaySQLError(SQLException e) {
+		System.out.println("Error message: " + e.getMessage());
+		System.out.println("Error code: " + e.getErrorCode());
+		System.out.println("SQL state: " + e.getSQLState());
+		e.printStackTrace();
+	}
+
 
 }
